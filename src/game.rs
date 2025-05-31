@@ -7,21 +7,22 @@ use std::collections::HashMap;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
+pub struct Game {
+    world: World,
+    schedules: HashMap<Stage, Schedule>,
+}
+
 #[derive(ScheduleLabel, Debug, Clone, Eq, PartialEq, Hash, EnumIter)]
-pub enum GameSchedule {
+pub enum Stage {
     Startup,
     Main,
     Producers,
     Consumers,
+    Renders,
 }
 
 #[derive(Resource)]
-struct DeltaTime(f32);
-
-pub struct Game {
-    world: World,
-    schedules: HashMap<GameSchedule, Schedule>,
-}
+pub struct DeltaTime(pub f32);
 
 impl Game {
     pub fn new() -> Self {
@@ -41,7 +42,7 @@ impl Game {
 
     pub fn add_systems<M>(
         &mut self,
-        schedule: GameSchedule,
+        schedule: Stage,
         systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
     ) {
         if let Some(sch) = self.schedules.get_mut(&schedule) {
@@ -66,10 +67,10 @@ impl Game {
     }
 }
 
-fn schedule_init() -> HashMap<GameSchedule, Schedule> {
+fn schedule_init() -> HashMap<Stage, Schedule> {
     let mut schedules = HashMap::new();
 
-    for label in GameSchedule::iter() {
+    for label in Stage::iter() {
         schedules.insert(label, Schedule::default());
     }
 

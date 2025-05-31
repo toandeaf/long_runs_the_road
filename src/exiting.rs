@@ -1,4 +1,4 @@
-use crate::game::{Game, GameSchedule};
+use crate::game::{Game, Stage};
 use crate::plugin::Plugin;
 use bevy_ecs::prelude::*;
 use macroquad::input::{is_key_pressed, KeyCode};
@@ -13,8 +13,8 @@ impl Plugin for ExitPlugin {
     fn apply(&self, game: &mut Game) {
         game.register_event::<ExitEvent>();
 
-        game.add_systems(GameSchedule::Producers, exit_evaluator);
-        game.add_systems(GameSchedule::Consumers, exit_consumer);
+        game.add_systems(Stage::Producers, exit_evaluator);
+        game.add_systems(Stage::Consumers, exit_consumer);
     }
 }
 
