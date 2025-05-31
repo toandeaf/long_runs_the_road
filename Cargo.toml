@@ -1,0 +1,16 @@
+[package]
+name = "long_runs_the_road"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Macroquad is a game engine that provides a simple API for 2D graphics, audio, and input handling.
+macroquad = "0.4.14"
+
+# Using bevy's ECS system because it's sweet.
+bevy_ecs = "0.16.1"
+
+# Strum provides seem enum utilities - namely supports iterating over enum variants
+strum = "0.27.1"
+strum_macros = "0.27.1"
+
