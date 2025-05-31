@@ -9,6 +9,15 @@ pub struct ExitPlugin;
 #[derive(Event)]
 struct ExitEvent;
 
+impl Plugin for ExitPlugin {
+    fn apply(&self, game: &mut Game) {
+        game.register_event::<ExitEvent>();
+
+        game.add_systems(GameSchedule::Producers, exit_evaluator);
+        game.add_systems(GameSchedule::Consumers, exit_consumer);
+    }
+}
+
 fn exit_evaluator(mut writer: EventWriter<ExitEvent>) {
     if is_key_pressed(KeyCode::Escape) {
         writer.write(ExitEvent);
@@ -16,17 +25,8 @@ fn exit_evaluator(mut writer: EventWriter<ExitEvent>) {
 }
 
 fn exit_consumer(mut reader: EventReader<ExitEvent>) {
-    if let Some(_) = reader.read().next() {
+    if reader.read().next().is_some() {
         println!("Exit event received, exiting...");
         exit(0);
-    }
-}
-
-impl Plugin for ExitPlugin {
-    fn apply(&self,  game: &mut Game) {
-        game.add_resource(Events::<ExitEvent>::default());
-
-        game.add_systems(GameSchedule::Producers, exit_evaluator);
-        game.add_systems(GameSchedule::Consumers, exit_consumer);
     }
 }

@@ -1,5 +1,5 @@
 use crate::plugin::Plugin;
-use bevy_ecs::prelude::{IntoScheduleConfigs, Resource, Schedule, World};
+use bevy_ecs::prelude::{Event, Events, IntoScheduleConfigs, Resource, Schedule, World};
 use bevy_ecs::schedule::ScheduleLabel;
 use bevy_ecs::system::ScheduleSystem;
 use macroquad::prelude::get_frame_time;
@@ -30,7 +30,11 @@ impl Game {
             world: world_init(),
         }
     }
-    
+
+    pub fn register_event<E: Event>(&mut self) {
+        self.add_resource(Events::<E>::default());
+    }
+
     pub fn add_resource<R: Resource>(&mut self, resource: R) {
         self.world.insert_resource(resource);
     }
@@ -47,17 +51,17 @@ impl Game {
         }
     }
 
-    pub fn run(&mut self) {
-        self.world.insert_resource(DeltaTime(get_frame_time()));
-
-        for schedule in self.schedules.values_mut() {
-            schedule.run(&mut self.world);
-        }
+    pub fn add_plugin(&mut self, plugin: impl Plugin) {
+        plugin.apply(self);
     }
 
-    pub fn apply_plugins(&mut self, plugins: &[impl Plugin]) {
-        for plugin in plugins {
-            plugin.apply(self);
+    pub fn run(&mut self) {
+        // Update frame time
+        self.add_resource(DeltaTime(get_frame_time()));
+        
+        // Run all schedules
+        for schedule in self.schedules.values_mut() {
+            schedule.run(&mut self.world);
         }
     }
 }
