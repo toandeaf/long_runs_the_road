@@ -77,6 +77,6 @@ fn circle_gravity_applier(mut query: Query<&mut CirclePosition>, mut reader: Eve
 
 fn circle_renderer(query: Query<&CirclePosition>) {
     for circle in query.iter() {
-        draw_circle(circle.x, circle.y, 15., RED);
+        draw_circle(circle.x, circle.y, 10., RED);
     }
 }
