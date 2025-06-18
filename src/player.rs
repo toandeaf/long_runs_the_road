@@ -1,12 +1,13 @@
-use crate::game::{Game, Stage};
+use crate::game::{DeltaTime, Game, Stage};
 use crate::plugin::Plugin;
 use bevy_ecs::event::{Event, EventReader, EventWriter};
-use bevy_ecs::prelude::{ResMut, Resource};
+use bevy_ecs::prelude::{Res, ResMut, Resource};
 use input::KeyCode;
 use macroquad::color::WHITE;
 use macroquad::experimental::animation::{AnimatedSprite, Animation};
 use macroquad::input;
 use macroquad::input::is_key_down;
+use macroquad::math::Vec2;
 use macroquad::prelude::{draw_texture_ex, load_texture, DrawTextureParams, Texture2D};
 
 pub struct PlayerPlugin;
@@ -25,6 +26,7 @@ impl Plugin for PlayerPlugin {
 struct PlayerSprite {
     sprite: AnimatedSprite,
     texture: Texture2D,
+    transform: Vec2,
 }
 
 #[derive(Event)]
@@ -39,6 +41,8 @@ enum Direction {
     Right,
     None,
 }
+
+const PLAYER_SPEED: f32 = 100.0;
 
 fn movement_eval(mut writer: EventWriter<MovementEvent>) {
     if is_key_down(KeyCode::W) {
@@ -67,16 +71,32 @@ fn movement_eval(mut writer: EventWriter<MovementEvent>) {
 fn movement_applier(
     mut player_sprite: ResMut<PlayerSprite>,
     mut reader: EventReader<MovementEvent>,
+    time: Res<DeltaTime>
 ) {
+    println!("delta time is {}", time.0);
     for event in reader.read() {
-        player_sprite.sprite.playing = true; 
+        player_sprite.sprite.playing = true;
+        
         match event.direction {
-            Direction::Up => player_sprite.sprite.set_animation(0),
-            Direction::Down => player_sprite.sprite.set_animation(1),
-            Direction::Left => player_sprite.sprite.set_animation(2),
-            Direction::Right => player_sprite.sprite.set_animation(3),
+            Direction::Up => {
+                player_sprite.sprite.set_animation(0);
+                player_sprite.transform.y -= PLAYER_SPEED * time.0; 
+            },
+            Direction::Down => {
+                player_sprite.sprite.set_animation(1);
+                player_sprite.transform.y += PLAYER_SPEED * time.0;
+            },
+            Direction::Left => {
+                player_sprite.sprite.set_animation(2);
+                player_sprite.transform.x -= PLAYER_SPEED * time.0;
+            },
+            Direction::Right => {
+                player_sprite.sprite.set_animation(3);
+                player_sprite.transform.x += PLAYER_SPEED * time.0;
+            },
             Direction::None => {
                 player_sprite.sprite.playing = false;
+                player_sprite.sprite.set_frame(0);
             }
         }
     }
@@ -85,8 +105,8 @@ fn movement_applier(
 fn render_player(mut player_sprite: ResMut<PlayerSprite>) {
     draw_texture_ex(
         &player_sprite.texture,
-        300.,
-        300.,
+        player_sprite.transform.x,
+        player_sprite.transform.y,
         WHITE,
         DrawTextureParams {
             source: Some(player_sprite.sprite.frame().source_rect),
@@ -107,32 +127,34 @@ pub async fn add_player_sprite(game: &mut Game) {
                 name: "up".to_string(),
                 row: 0,
                 frames: 9,
-                fps: 12,
+                fps: 20,
             },
             Animation {
                 name: "down".to_string(),
                 row: 1,
                 frames: 9,
-                fps: 15,
+                fps: 20,
             },
             Animation {
                 name: "left".to_string(),
                 row: 2,
                 frames: 9,
-                fps: 15,
+                fps: 20,
             },
             Animation {
                 name: "right".to_string(),
                 row: 3,
                 frames: 9,
-                fps: 15,
+                fps: 20,
             },
         ],
         true,
     );
 
     let image = load_texture("assets/walk.png").await.unwrap();
+    let start_location = Vec2::new(300., 300.);
     game.add_resource(PlayerSprite {
+        transform: start_location,
         sprite,
         texture: image,
     });
