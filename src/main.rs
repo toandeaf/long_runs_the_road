@@ -6,7 +6,6 @@ mod plugin;
 
 use crate::exiting::ExitPlugin;
 use crate::game::Game;
-use bevy_ecs::prelude::Resource;
 
 use crate::circle::CirclePlugin;
 use crate::player::{add_player_sprite, PlayerPlugin};
@@ -31,7 +30,7 @@ fn main() {
 
 async fn game_loop(mut game: Game) {
     add_player_sprite(&mut game).await;
-
+    
     loop {
         clear_background(WHITE);
         game.run();
